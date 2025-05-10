@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Book by Devendra Niraula</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts for attractive text -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevent horizontal scroll from page transitions */
+        }
+
+        .book-container {
+            width: 100%;
+            max-width: 800px; /* Or your preferred book width */
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden; /* Crucial for page transitions */
+            position: relative;
+            min-height: 600px; /* Ensure container has height */
+        }
+
+        .page {
+            width: 100%;
+            min-height: 600px; /* Consistent page height */
+            padding: 20px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
+            transform: translateX(100%); /* Start off-screen to the right */
+            opacity: 0;
+            visibility: hidden; /* Hide until active */
+            background-color: #fff; /* Default page background */
+            color: #333; /* Default text color */
+        }
+
+        .page.active {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+            z-index: 1;
+        }
+
+        .page.previous {
+            transform: translateX(-100%); /* Move off-screen to the left */
+            opacity: 0;
+            visibility: hidden;
+            z-index: 0;
+        }
+
+        /* --- Front Page Styles --- */
+        #page-front {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #page-front .quiz-book-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #fff0c1; /* Light Gold */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        #page-front .author-name {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.8rem;
+            color: #e0e0e0; /* Light Grey */
+            margin-bottom: 20px;
+        }
+
+        #page-front img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid #fff0c1;
+            margin-bottom: 30px;
+            object-fit: cover;
+        }
+
+        /* --- Grade Selection Page Styles --- */
+        #page-grades {
+            background: linear-gradient(to right, #f6d365, #fda085);
+            color: #3d2c0a;
+        }
+         #page-grades h2 {
+            color: #5c3f0e;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* --- Topic Selection Page Styles --- */
+        #page-topics {
+            background: linear-gradient(to bottom, #c1dfc4, #deecdd);
+            color: #253c28;
+        }
+        #page-topics h2 {
+            color: #1a3a1f;
+             text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* --- Quiz Page Styles --- */
+        #page-quiz {
+            background: linear-gradient(45deg, #e0c3fc, #8ec5fc);
+            color: #2c1f4a;
+        }
+         #page-quiz h3 {
+            color: #3d2c7a;
+        }
+        .question-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 8px;
+        }
+        .options .list-group-item {
+            cursor: pointer;
+        }
+        .options .list-group-item:hover {
+            background-color: #e9ecef;
+        }
+        .options .list-group-item.selected {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .options .list-group-item.correct {
+            background-color: #198754;
+            color: white;
+        }
+        .options .list-group-item.incorrect {
+            background-color: #dc3545;
+            color: white;
+        }
+
+
+        /* --- Results Page Styles --- */
+        #page-results {
+            background: linear-gradient(to top, #ff9a9e, #fecfef);
+            color: #591a2e;
+            text-align: center;
+        }
+         #page-results h2 {
+            color: #7a2841;
+         }
+
+
+        .nav-buttons {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .list-group-item {
+            font-size: 1.1rem;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px !important; /* Important to override Bootstrap */
+            transition: background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="book-container">
+        <!-- Page 1: Front Page -->
+        <div id="page-front" class="page active">
+            <h1 class="quiz-book-title">QUIZ BOOK</h1>
+            <!-- Replace with your photo -->
+            <img src="E:\Quiz Book\Dev.jpg" alt="Author's Photo">
+            <p class="author-name">Written by Devendra Niraula</p>
+            <button class="btn btn-light btn-lg" onclick="navigateToPage('page-grades')">Start Quiz</button>
+        </div>
+
+        <!-- Page 2: Grade Selection -->
+        <div id="page-grades" class="page">
+            <h2>Select Your Grade</h2>
+            <div class="list-group">
+                <button type="button" class="list-group-item list-group-item-action" onclick="selectGrade('Grade 10')">Grade 10</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="selectGrade('Grade 9')">Grade 9</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="selectGrade('Grade 8')">Grade 8</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="selectGrade('Grade 7')">Grade 7</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="selectGrade('Grade 6')">Grade 6</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="selectGrade('Grade 5')">Grade 5</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="navigateToPage('page-front')">Back to Cover</button>
+            </div>
+        </div>
+
+        <!-- Page 3: Topic Selection -->
+        <div id="page-topics" class="page">
+            <h2 id="topic-grade-title">Select Topic for Grade X</h2>
+            <div id="topic-list" class="list-group">
+                <!-- Topics will be dynamically inserted here -->
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="navigateToPage('page-grades')">Back to Grades</button>
+            </div>
+        </div>
+
+        <!-- Page 4: Quiz Questions -->
+        <div id="page-quiz" class="page">
+            <h3 id="quiz-header">Quiz: Grade X - Topic Y</h3>
+            <div id="question-area">
+                <!-- Question will be loaded here -->
+            </div>
+            <div id="feedback-area" class="mt-2"></div>
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="navigateToPage('page-topics')">Back to Topics</button>
+                <button id="next-question-btn" class="btn btn-primary" onclick="nextQuestion()">Next Question</button>
+            </div>
+        </div>
+
+        <!-- Page 5: Results -->
+        <div id="page-results" class="page">
+            <h2>Quiz Results</h2>
+            <p id="score-display" class="fs-4"></p>
+            <p id="remarks-display" class="fs-5"></p>
+            <div class="nav-buttons">
+                 <button class="btn btn-info" onclick="navigateToPage('page-topics')">Try Another Topic</button>
+                 <button class="btn btn-success" onclick="navigateToPage('page-grades')">Change Grade</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS Bundle (Popper.js included) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- QUESTION DATA (This would ideally be generated by Python) ---
+        const allQuestions = {
+            "Grade 10": {
+                "History": [
+                    { q: "When was the Anglo-Nepal War fought?", o: ["1814-1816 AD", "1768-1770 AD", "1901-1903 AD", "1857-1859 AD"], a: 0, explanation: "The Anglo-Nepal War, also known as the Gurkha War, was fought between the Gorkha Army of the Kingdom of Nepal and the British East India Company from 1814 to 1816." },
+                    { q: "Who was the first Rana Prime Minister of Nepal?", o: ["Bhimsen Thapa", "Jung Bahadur Rana", "Chandra Shumsher", "Dev Shumsher"], a: 1, explanation: "Jung Bahadur Rana established the Rana dynasty in Nepal in 1846, becoming the first Rana Prime Minister." }
+                ],
+                "Geography": [
+                    { q: "What is the approximate total area of Nepal?", o: ["147,516 sq km", "120,345 sq km", "168,980 sq km", "100,000 sq km"], a: 0, explanation: "Nepal's total area is approximately 147,516 square kilometers." },
+                    { q: "Which National Park is famous for the One-Horned Rhinoceros in Nepal?", o: ["Sagarmatha National Park", "Chitwan National Park", "Langtang National Park", "Shey Phoksundo National Park"], a: 1, explanation: "Chitwan National Park is a UNESCO World Heritage site renowned for its population of One-Horned Rhinoceroses." }
+                ],
+                "Science": [
+                    { q: "What is the chemical symbol for Gold?", o: ["Ag", "Au", "Gd", "Go"], a: 1, explanation: "Au is the chemical symbol for Gold, derived from its Latin name 'Aurum'." },
+                    { q: "Which gas is most abundant in Earth's atmosphere?", o: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Argon"], a: 2, explanation: "Nitrogen makes up about 78% of Earth's atmosphere." }
+                ],
+                "Religion, Culture & Tradition": [
+                    { q: "What is the main religious festival celebrated by Hindus in Nepal, known for Dashain?", o: ["Tihar", "Buddha Jayanti", "Dashain (Vijaya Dashami)", "Holi"], a: 2, explanation: "Dashain is the longest and most auspicious festival for Nepali Hindus, celebrating the victory of good over evil." },
+                    { q: "The Kumari, or Living Goddess, is a tradition primarily associated with which ethnic group in Kathmandu Valley?", o: ["Tamang", "Newar", "Gurung", "Sherpa"], a: 1, explanation: "The tradition of the Kumari is deeply rooted in the Newar culture of the Kathmandu Valley." }
+                ],
+                "Sports": [
+                    { q: "What is the national sport of Nepal?", o: ["Cricket", "Football (Soccer)", "Volleyball", "Archery"], a: 2, explanation: "Volleyball was declared the national sport of Nepal in May 2017." },
+                    { q: "Who is the first Nepali to summit Mount Everest without supplemental oxygen?", o: ["Pasang Lhamu Sherpa", "Babu Chiri Sherpa", "Ang Rita Sherpa", "Tenzing Norgay"], a: 2, explanation: "Ang Rita Sherpa, also known as the 'Snow Leopard', summited Everest 10 times without supplemental oxygen." }
+                ],
+                 "Space & Astronomy": [
+                    { q: "Which planet is known as the 'Red Planet'?", o: ["Jupiter", "Mars", "Venus", "Saturn"], a: 1, explanation: "Mars is often called the Red Planet due to the iron oxide prevalent on its surface." },
+                    { q: "What is the name of the galaxy that contains our Solar System?", o: ["Andromeda", "Triangulum", "Whirlpool", "Milky Way"], a: 3, explanation: "Our Solar System is located within the Milky Way galaxy." }
+                ],
+                "General Topic": [
+                    { q: "What is the currency of Nepal?", o: ["Rupee", "Taka", "Kyat", "Ngultrum"], a: 0, explanation: "The official currency of Nepal is the Nepali Rupee (NPR)." },
+                    { q: "How many provinces are there in Nepal according to the new constitution?", o: ["5", "14", "7", "75"], a: 2, explanation: "Nepal is divided into 7 provinces as per the constitution promulgated in 2015." }
+                ]
+            },
+            "Grade 9": { /* Add questions for Grade 9 */ },
+            "Grade 8": { /* Add questions for Grade 8 */ },
+            "Grade 7": { /* Add questions for Grade 7 */ },
+            "Grade 6": { /* Add questions for Grade 6 */ },
+            "Grade 5": {
+                "History": [
+                    { q: "Who is known as the 'Father of the Nation' in Nepal (though not an official title, commonly referred to)?", o: ["King Mahendra", "King Tribhuvan", "Gautam Buddha", "Prithvi Narayan Shah"], a: 3, explanation: "Prithvi Narayan Shah is credited with the unification of modern Nepal." },
+                    { q: "What is a famous ancient palace square in Kathmandu?", o: ["Pashupatinath", "Boudhanath", "Kathmandu Durbar Square", "Garden of Dreams"], a: 2, explanation: "Kathmandu Durbar Square is one of three Durbar Squares in the Kathmandu Valley in Nepal, all of which are UNESCO World Heritage Sites." }
+                ],
+                "Geography": [
+                    { q: "What is the highest mountain in the world, located in Nepal?", o: ["K2", "Mount Everest (Sagarmatha)", "Kangchenjunga", "Lhotse"], a: 1, explanation: "Mount Everest, known as Sagarmatha in Nepali, is the Earth's highest mountain above sea level." },
+                    { q: "Which of these is a famous lake in Pokhara, Nepal?", o: ["Rara Lake", "Tilicho Lake", "Phewa Lake", "Gosaikunda"], a: 2, explanation: "Phewa Lake is a freshwater lake in Nepal formerly called Baidam Tal located in the south of the Pokhara Valley." }
+                ],
+                "Science": [
+                    { q: "What do plants need to make their own food through photosynthesis?", o: ["Moonlight, Water, Soil", "Sunlight, Water, Carbon Dioxide", "Oxygen, Soil, Sugar", "Wind, Rain, Rocks"], a: 1, explanation: "Plants use sunlight, water, and carbon dioxide to create glucose (their food) and oxygen through photosynthesis." },
+                    { q: "How many legs does a spider have?", o: ["Six", "Eight", "Ten", "Four"], a: 1, explanation: "Spiders are arachnids and typically have eight legs." }
+                ],
+                 "Religion, Culture & Tradition": [
+                    { q: "What animal is considered sacred by many Hindus in Nepal?", o: ["Dog", "Cat", "Cow", "Horse"], a: 2, explanation: "The cow is considered a sacred animal in Hinduism and is worshipped." },
+                    { q: "What is 'Namaste'?", o: ["A type of food", "A traditional Nepali greeting", "A dance form", "A mountain peak"], a: 1, explanation: "'Namaste' is a respectful form of greeting in Hindu custom, used in Nepal and India." }
+                ],
+                "Sports": [
+                    { q: "Which of these is a popular game played with a small, often feathered, object kicked with feet?", o: ["Marbles", "Dandi Biyo", "Hide and Seek", "Bagh Chal"], a: 1, explanation: "Dandi Biyo is a traditional Nepali stick game, somewhat similar to Gilli Danda in India. (Revising to a more common game for younger kids - let's say football is also very popular) How about: Which sport involves kicking a ball into a net?", o: ["Cricket", "Volleyball", "Football (Soccer)", "Basketball"], a: 2, explanation:"Football is a very popular sport worldwide where players try to score by kicking a ball into the opponent's goal." },
+                    { q: "What do you use to fly a kite?", o: ["A rope", "A stick", "A string (Lattai)", "A net"], a: 2, explanation: "Kites are flown using a string, often wound on a spool called 'Lattai' in Nepali." }
+                ],
+                 "Space & Astronomy": [
+                    { q: "What do we call the big, bright star that gives us light during the day?", o: ["Moon", "Mars", "Sun", "Jupiter"], a: 2, explanation: "The Sun is the star at the center of our Solar System and provides Earth with light and heat." },
+                    { q: "What shines in the sky at night and changes its shape?", o: ["Sun", "Rainbow", "Cloud", "Moon"], a: 3, explanation: "The Moon is Earth's natural satellite and appears to change shape due to its phases." }
+                ],
+                "General Topic": [
+                    { q: "What is the capital city of Nepal?", o: ["Pokhara", "Biratnagar", "Kathmandu", "Lalitpur"], a: 2, explanation: "Kathmandu is the capital and largest city of Nepal." },
+                    { q: "Which color is at the top of a traffic light that means 'Stop'?", o: ["Green", "Yellow", "Red", "Blue"], a: 2, explanation: "Red light on a traffic signal means 'Stop'." }
+                ]
+            }
+        };
+
+        // --- Application State ---
+        let currentPageId = 'page-front';
+        let currentGrade = '';
+        let currentTopic = '';
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questionsForQuiz = [];
+        let userAnswers = []; // To store if answer was correct/incorrect and selected option
+
+        // --- Navigation ---
+        function navigateToPage(pageId) {
+            const oldPage = document.getElementById(currentPageId);
+            const newPage = document.getElementById(pageId);
+
+            if (oldPage && newPage) {
+                oldPage.classList.remove('active');
+                oldPage.classList.add('previous'); // So it slides out to left
+
+                // Reset previous page if it slides out too quickly
+                setTimeout(() => {
+                     if(oldPage.id !== pageId) oldPage.classList.remove('previous');
+                }, 600);
+
+
+                newPage.classList.add('active');
+                currentPageId = pageId;
+            }
+        }
+
+        // --- Grade and Topic Selection ---
+        function selectGrade(grade) {
+            currentGrade = grade;
+            document.getElementById('topic-grade-title').innerText = `Select Topic for ${grade}`;
+            const topicListEl = document.getElementById('topic-list');
+            topicListEl.innerHTML = ''; // Clear previous topics
+
+            if (allQuestions[grade]) {
+                const topics = Object.keys(allQuestions[grade]);
+                topics.forEach(topic => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'list-group-item list-group-item-action';
+                    button.innerText = topic;
+                    button.onclick = () => selectTopic(topic);
+                    topicListEl.appendChild(button);
+                });
+            } else {
+                topicListEl.innerHTML = '<p class="text-muted">No topics available for this grade yet. Please add questions.</p>';
+            }
+            navigateToPage('page-topics');
+        }
+
+        function selectTopic(topic) {
+            currentTopic = topic;
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            if (allQuestions[currentGrade] && allQuestions[currentGrade][currentTopic]) {
+                questionsForQuiz = allQuestions[currentGrade][currentTopic];
+                document.getElementById('quiz-header').innerText = `Quiz: ${currentGrade} - ${currentTopic}`;
+                loadQuestion();
+                navigateToPage('page-quiz');
+            } else {
+                alert("No questions found for this topic. Please add them.");
+                navigateToPage('page-topics'); // Go back
+            }
+        }
+
+        // --- Quiz Logic ---
+        function loadQuestion() {
+            const questionArea = document.getElementById('question-area');
+            const feedbackArea = document.getElementById('feedback-area');
+            feedbackArea.innerHTML = ''; // Clear previous feedback
+            document.getElementById('next-question-btn').innerText = "Next Question";
+            document.getElementById('next-question-btn').disabled = true;
+
+
+            if (currentQuestionIndex < questionsForQuiz.length) {
+                const qData = questionsForQuiz[currentQuestionIndex];
+                let optionsHTML = '<ul class="list-group options">';
+                qData.o.forEach((option, index) => {
+                    optionsHTML += `<li class="list-group-item" onclick="selectAnswer(this, ${index}, ${qData.a})">${option}</li>`;
+                });
+                optionsHTML += '</ul>';
+
+                questionArea.innerHTML = `
+                    <div class="question-container">
+                        <h5>Q ${currentQuestionIndex + 1}: ${qData.q}</h5>
+                        ${optionsHTML}
+                    </div>
+                `;
+            } else {
+                // Quiz finished
+                showResults();
+            }
+        }
+
+        function selectAnswer(selectedLi, selectedOptionIndex, correctOptionIndex) {
+            // Disable further selections for this question
+            const optionsLi = selectedLi.parentElement.getElementsByTagName('li');
+            for (let li of optionsLi) {
+                li.onclick = null; // Remove click handler
+                li.style.cursor = 'default';
+                 if (li === selectedLi) {
+                    li.classList.add('selected');
+                }
+            }
+
+            let isCorrect = selectedOptionIndex === correctOptionIndex;
+            if (isCorrect) {
+                score++;
+                selectedLi.classList.add('correct');
+                document.getElementById('feedback-area').innerHTML = `<p class="text-success">Correct! ${questionsForQuiz[currentQuestionIndex].explanation || ''}</p>`;
+            } else {
+                selectedLi.classList.add('incorrect');
+                optionsLi[correctOptionIndex].classList.add('correct'); // Show the correct answer
+                 document.getElementById('feedback-area').innerHTML = `<p class="text-danger">Incorrect. The correct answer was: ${questionsForQuiz[currentQuestionIndex].o[correctOptionIndex]}.<br>${questionsForQuiz[currentQuestionIndex].explanation || ''}</p>`;
+            }
+            userAnswers.push({ question: questionsForQuiz[currentQuestionIndex].q, selected: selectedOptionIndex, correct: correctOptionIndex, isCorrect: isCorrect });
+
+            document.getElementById('next-question-btn').disabled = false;
+             if (currentQuestionIndex >= questionsForQuiz.length -1) {
+                document.getElementById('next-question-btn').innerText = "Show Results";
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            const scoreDisplay = document.getElementById('score-display');
+            const remarksDisplay = document.getElementById('remarks-display');
+            const percentage = (score / questionsForQuiz.length) * 100;
+            scoreDisplay.innerText = `You scored ${score} out of ${questionsForQuiz.length} (${percentage.toFixed(2)}%).`;
+
+            let remarks = "";
+            if (percentage == 100) remarks = "Excellent! Perfect score!";
+            else if (percentage >= 80) remarks = "Great job!";
+            else if (percentage >= 60) remarks = "Good effort!";
+            else if (percentage >= 40) remarks = "You can do better. Keep practicing!";
+            else remarks = "Needs more practice. Don't give up!";
+            remarksDisplay.innerText = remarks;
+
+            navigateToPage('page-results');
+        }
+
+
+        // Initialize the first page (front page)
+        // Ensure only the front page is 'active' initially, others are off-screen.
+        // The CSS handles this by default now.
+        // document.addEventListener('DOMContentLoaded', () => {
+        //      navigateToPage('page-front'); // This ensures correct setup on load if JS runs before full DOM.
+        // });
+
+
+    </script>
+
+    <!-- Conceptual Python script for generating questions_data.js -->
+    <!--
+    # (This is NOT executable in the browser, but shows how you'd generate the JS)
+    # Python Script: generate_questions.py
+    import json
+
+    all_questions_py = {
+        "Grade 10": {
+            "History": [
+                {"q": "When was the Anglo-Nepal War fought?", "o": ["1814-1816 AD", "1768-1770 AD", "1901-1903 AD", "1857-1859 AD"], "a": 0, "explanation": "The Anglo-Nepal War..."},
+                # ... more questions
+            ],
+            # ... more topics
+        },
+        "Grade 5": {
+             "History": [
+                {"q": "Who is known as the 'Father of the Nation' in Nepal?", "o": ["King Mahendra", "King Tribhuvan", "Gautam Buddha", "Prithvi Narayan Shah"], "a": 3, "explanation": "Prithvi Narayan Shah..."},
+                # ... more questions
+            ],
+            # ... more topics
+        }
+        # ... other grades
+    }
+
+    # Output to a string that can be pasted into a <script> tag or a .js file
+    js_data_string = f"const allQuestions = {json.dumps(all_questions_py, indent=4, ensure_ascii=False)};"
+
+    # To write to a file (e.g., questions.js)
+    # with open("questions_data.js", "w", encoding="utf-8") as f:
+    #     f.write(js_data_string)
+
+    # print(js_data_string) # To copy-paste
+    -->
+
+</body>
+</html>
